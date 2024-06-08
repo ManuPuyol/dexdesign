@@ -10,10 +10,10 @@
 </template>
 
 <script>
-import { ref, onMounted } from "vue";
+import { ref, onMounted,watch  } from "vue";
 import { getPokemonByGeneration } from "../api/pokeapiService";
 import PokeCard from "./PokeCard.vue";
-
+import { eventBus } from "../eventBus";
 export default {
   name: "PokeList",
   components: {
@@ -23,6 +23,7 @@ export default {
     const visiblePokemon = ref([]);
 
     const fetchPokemonByGeneration = async (generation) => {
+      console.log(generation)
       try {
         const pokemonList = await getPokemonByGeneration(generation);
         pokemonList.sort((a, b) => a.details.id - b.details.id);
@@ -33,9 +34,14 @@ export default {
         console.error("Error fetching Pokémon by generation:", error);
       }
     };
-
+    // Watch for changes in selectedGeneration
+    watch(() => eventBus.value.selectedGeneration, (newGeneration) => {
+          if (newGeneration) {
+            fetchPokemonByGeneration(newGeneration);
+          }
+        });
     onMounted(() => {
-      fetchPokemonByGeneration(1); // Especifica la generación deseada aquí
+      fetchPokemonByGeneration(eventBus.value.selectedGeneration || 'generation-i'); // Especifica la generación inicial deseada aquí
     });
 
     return {

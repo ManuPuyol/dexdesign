@@ -18,10 +18,26 @@ export const fetchPokemonDetailsAndSpecies = async (nameOrId) => {
     const details = detailsResponse.data;
     const species = speciesResponse.data;
     
-    const description = species.flavor_text_entries.find(entry => entry.language.name === 'es').flavor_text;
+    let description = '';
+    
+    // Buscar descripción en español
+    const spanishEntry = species.flavor_text_entries.find(entry => entry.language.name === 'es');
+    if (spanishEntry) {
+      description = spanishEntry.flavor_text;
+    } else {
+      // Si no hay descripción en español, buscar en inglés
+      const englishEntry = species.flavor_text_entries.find(entry => entry.language.name === 'en');
+      if (englishEntry) {
+        description = englishEntry.flavor_text;
+      } else {
+        // Si no hay descripción en inglés, dejar la descripción vacía o poner un mensaje por defecto
+        description = 'Description not available';
+      }
+    }
+    
     details.description = description;
     return {
-      details:details,
+      details: details,
       // Otros detalles necesarios aquí
     };
   } catch (error) {
@@ -44,7 +60,7 @@ export const getPokemonByGeneration = async (generation) => {
       try {
         const pokemonSpeciesResponse = await axiosInstance.get(url);
         const pokemonSpeciesData = pokemonSpeciesResponse.data;
-        
+
         // Obtener detalles y especie de cada Pokémon
         const detailsAndSpecies = await fetchPokemonDetailsAndSpecies(pokemonSpeciesData.name);
         return {
@@ -52,11 +68,13 @@ export const getPokemonByGeneration = async (generation) => {
           details: detailsAndSpecies.details
         };
       } catch (error) {
-        console.error(`Error fetching data for ${pokemonSpeciesData.name}:`, error);
+        console.error(`Error fetching data for Pokémon at URL ${url}:`, error);
+        return null; // Retorna null en caso de error
       }
     }));
 
-    return pokemonData;
+    // Filtrar los resultados nulos
+    return pokemonData.filter(pokemon => pokemon !== null);
   } catch (error) {
     console.error('Error fetching Pokémon data by generation:', error);
     throw error;
@@ -66,7 +84,6 @@ export const getPokemonByGeneration = async (generation) => {
 export const fetchGenerations = async () => {
   try {
     const response = await axiosInstance.get('/generation');
-    console.log(response)
     return response.data.results;
   } catch (error) {
     console.error('Error fetching generations:', error);

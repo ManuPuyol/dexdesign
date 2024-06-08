@@ -1,8 +1,8 @@
 <template>
-  <header class="bg-gray-800 text-white py-4 px-6 flex justify-between items-center">
+  <header class="bg-gray-800 text-white py-4 px-6 flex justify-between items-center shadow sticky top-0 z-50">
     <!-- Logo -->
     <div>
-      <img src="logo.png" alt="Logo" class="h-8"> <!-- Ajusta el tamaño del logo según sea necesario -->
+      <img src="@/assets/logo.svg" alt="Logo" class="h-10"> <!-- Ajusta el tamaño del logo según sea necesario -->
     </div>
 
     <!-- Contenedor para el selector y la barra de búsqueda -->
@@ -10,10 +10,17 @@
       <!-- Selector -->
       <div class="relative mr-4">
         <select 
-          v-model="selectedRegion" 
+          @change="onGenerationChange"
+          v-model="selectedGeneration" 
           class="block appearance-none bg-gray-700 border border-gray-600 text-white py-2 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-gray-600 focus:border-gray-700"
         >
-          <option v-for="region in regions" :key="region.url" :value="region.name">{{ region.name }}</option>
+          <option 
+            v-for="generation in generations" 
+            :key="generation.url" 
+            :value="generation.name"
+          >
+            {{ getRegionName(generation.name) }}
+          </option>
         </select>
         <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-300">
           <!-- Icono de flecha hacia abajo para el selector -->
@@ -38,25 +45,46 @@
 </template>
 
 <script>
+import { eventBus } from '../eventBus';
+
 export default {
-  name: 'Header', // Nombre del componente
+  name: 'Header', 
   props: {
-    regions: {
+    generations: {
       type: Array,
       required: true
     }
   },
   data() {
     return {
-      selectedRegion: null // Inicializar la región seleccionada como nula
+      selectedGeneration: null, 
+      generationToRegionMap: {
+        'generation-i': 'Kanto',
+        'generation-ii': 'Johto',
+        'generation-iii': 'Hoenn',
+        'generation-iv': 'Sinnoh',
+        'generation-v': 'Unova',
+        'generation-vi': 'Kalos',
+        'generation-vii': 'Alola',
+        'generation-viii': 'Galar',
+        'generation-ix': 'Paldea'
+      }
     };
   },
+  methods: {
+    getRegionName(generationName) {
+      return this.generationToRegionMap[generationName] || generationName;
+    },
+    onGenerationChange() {
+      eventBus.value.selectedGeneration = this.selectedGeneration;
+    }
+  },
   watch: {
-    regions(newRegions) {
-      // Verificar si hay al menos una región
-      if (newRegions.length > 0) {
-        // Establecer la primera región como seleccionada
-        this.selectedRegion = newRegions[0].name;
+    generations(newGenerations) {
+      if (newGenerations.length > 0) {
+        this.selectedGeneration = newGenerations[0].name;
+        eventBus.value.selectedGeneration = this.selectedGeneration;
+
       }
     }
   }

@@ -1,7 +1,7 @@
 <template>
   <div >
     <!-- Encabezado -->
-    <Header :regions="regions"/>
+    <Header :generations="generations"/>
     
     <div class="container mx-auto mt-8"> <!-- Agrega margen superior y se centra horizontalmente -->
       <router-view />
@@ -12,13 +12,12 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import Header from './components/Header.vue';
-import { fetchGenerations, fetchRegionsInfo } from "./api/pokeapiService";
+import { fetchGenerations } from "./api/pokeapiService";
 
-const regions = ref([]);
-
+const generations = ref([])
 onMounted(async () => {
   try {
-    regions.value = await fetchRegionsInfo();
+    generations.value = await fetchGenerations();
   } catch (error) {
     console.error('Error fetching generations:', error);
   }
@@ -36,7 +35,7 @@ onMounted(async () => {
 }
 
 body {
-  background: rgba(31, 41, 55);
+  background: rgb(35, 50, 70);
 }
 </style>
  
