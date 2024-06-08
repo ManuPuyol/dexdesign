@@ -1,16 +1,17 @@
 <template>
-  <div>
+  <div class="flex flex-wrap justify-around">
     <PokeCard
       v-for="pokemon in visiblePokemon"
-      :key="pokemon.details.name"
+      :key="pokemon.name"
       :pokemon="pokemon.details"
+      class="mb-4 mr-4"
     />
   </div>
 </template>
-  
-  <script>
+
+<script>
 import { ref, onMounted } from "vue";
-import { fetchAllPokemon, fetchPokemonDetails } from "../api/pokeapiService";
+import { getPokemonByGeneration } from "../api/pokeapiService";
 import PokeCard from "./PokeCard.vue";
 
 export default {
@@ -19,51 +20,22 @@ export default {
     PokeCard,
   },
   setup() {
-    const allPokemon = ref([]);
     const visiblePokemon = ref([]);
 
-    const loadPokemonDetailsInBatches = async () => {
-      const batchSize = 100;
-      let start = 0;
-      while (start < allPokemon.value.length) {
-        const batch = allPokemon.value.slice(start, start + batchSize);
-        await Promise.all(
-          batch.map(async (pokemon) => {
-            try {
-              const details = await fetchPokemonDetails(pokemon.name);
-              pokemon.details = details;
-            } catch (error) {
-              console.error(
-                `Error fetching details for ${pokemon.name}:`,
-                error
-              );
-            }
-          })
-        );
-        start += batchSize;
-        // Actualizar visiblePokemon con detalles cargados
-        visiblePokemon.value = allPokemon.value.filter(
-          (pokemon) => pokemon.details
-        );
-      }
-    };
-
-    const fetchAllPokemonAndDetails = async () => {
+    const fetchPokemonByGeneration = async (generation) => {
       try {
-        const pokemonList = await fetchAllPokemon();
-        allPokemon.value = pokemonList.map((pokemon) => ({
-          name: pokemon.name,
-          details: null,
-        }));
-        // Cargar detalles en lotes
-        await loadPokemonDetailsInBatches();
+        const pokemonList = await getPokemonByGeneration(generation);
+        pokemonList.sort((a, b) => a.details.id - b.details.id);
+
+
+        visiblePokemon.value = pokemonList;
       } catch (error) {
-        console.error("Error fetching all Pokémon and details:", error);
+        console.error("Error fetching Pokémon by generation:", error);
       }
     };
 
     onMounted(() => {
-      fetchAllPokemonAndDetails();
+      fetchPokemonByGeneration(1); // Especifica la generación deseada aquí
     });
 
     return {
@@ -72,8 +44,7 @@ export default {
   },
 };
 </script>
-  
-  <style scoped>
+
+<style scoped>
 /* Estilos del componente */
 </style>
-  

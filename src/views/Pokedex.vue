@@ -1,5 +1,5 @@
 <template>
-  <div class="pokedex bg-gray-500">
+  <div>
     <PokeList/>
   </div>
 </template>

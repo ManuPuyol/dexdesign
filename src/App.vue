@@ -1,26 +1,42 @@
 <template>
-  <router-view/>
+  <div >
+    <!-- Encabezado -->
+    <Header :regions="regions"/>
+    
+    <div class="container mx-auto mt-8"> <!-- Agrega margen superior y se centra horizontalmente -->
+      <router-view />
+    </div>
+  </div>
 </template>
 
+<script setup>
+import { ref, onMounted } from "vue";
+import Header from './components/Header.vue';
+import { fetchGenerations, fetchRegionsInfo } from "./api/pokeapiService";
+
+const regions = ref([]);
+
+onMounted(async () => {
+  try {
+    regions.value = await fetchRegionsInfo();
+  } catch (error) {
+    console.error('Error fetching generations:', error);
+  }
+});
+</script>
+
 <style lang="scss">
+/* Estilos globales */
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  color: #2c3e50;
+  color: white;
 }
 
-#nav {
-  padding: 30px;
-
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-
-    &.router-link-exact-active {
-      color: #42b983;
-    }
-  }
+body {
+  background: rgba(31, 41, 55);
 }
 </style>
+ 
